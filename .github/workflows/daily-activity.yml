@@ -1,0 +1,70 @@
+name: Keep GitHub Contributions Active
+
+on:
+  schedule:
+    # Toutes les heures
+    # Le workflow choisira lui-même un moment aléatoire
+    - cron: "0 * * * *"
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  daily-commit:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Generate random hour
+        id: random
+
+        run: |
+
+          CURRENT_HOUR=$(date -u +"%H")
+
+          RANDOM_HOUR=$((RANDOM % 24))
+
+          echo "Current UTC hour : $CURRENT_HOUR"
+          echo "Random UTC hour  : $RANDOM_HOUR"
+
+          if [ "$CURRENT_HOUR" -ne "$RANDOM_HOUR" ]; then
+            echo "run=false" >> $GITHUB_OUTPUT
+          else
+            echo "run=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update activity file
+        if: steps.random.outputs.run == 'true'
+
+        run: |
+
+          echo "Last update : $(date -u)" > activity.txt
+
+      - name: Commit
+
+        if: steps.random.outputs.run == 'true'
+
+        run: |
+
+          git add activity.txt
+
+          git diff --cached --quiet || git commit -m "chore: daily activity"
+
+      - name: Push
+
+        if: steps.random.outputs.run == 'true'
+
+        run: |
+
+          git push
