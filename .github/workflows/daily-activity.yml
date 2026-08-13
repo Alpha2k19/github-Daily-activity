@@ -1,11 +1,6 @@
 name: Keep GitHub Contributions Active
 
 on:
-  schedule:
-    - cron: "15 7 * * *"
-    - cron: "35 12 * * *"
-    - cron: "50 18 * * *"
-
   workflow_dispatch:
 
 permissions:
